@@ -1,0 +1,216 @@
+* Semantic Changelog
+
+This is an RFC (Request For Comments) stage project for determining a
+general purpose format for writing changelog messages so that they are
+human writable, machine readable, and semantically define what kinds
+of changes occured in the patch/commit.
+
+This is inspired by Rich Hickey and his take on "Semantic Versioning".
+
+Thus far I have used this in some of my own projects but really only
+in a "let's try it and see if I don't hate it kind of way". No reader
+or software has been built to support it and nor should it until these
+guidelines exit the research phase.
+
+Mostly this is hear to remind myself about the keywords I use.
+
+** Format
+
+The format of a semantic change message should be roughly equivalent
+to the TOML format.
+
+While many formats are human readable, fewer are human writable. And
+fewer are practically writable.
+
+I decided against YAML because as a format it is really complex. See
+arguments on the TOML repository.
+
+The goal for a microformat like this is that there should be almost no
+friction for a changelog writer to think about writing it so that
+there is no excuse for writing a good one.
+
+I think TOML gets us 80% of the way there. We might want something
+though that is slightly less general purpose.
+
+So I am experimenting with a slightly modified TOML format that makes
+writing message specs even easier, we will call it 'SAML'.
+
+Like the EDN format from clojure we add in an extension system for
+datatypes.
+
+Currently this means using a tilde character.
+
+We also make a few implicit structural markup features.
+
+The primary one is that you are allowed a single global value that
+will automatically be given a special name.
+
+This can be used for writing the git style first message line.
+
+Also we will support using the '[key]' token followed by content to
+implicitly assign content to that value. And after that value no more
+will be allowed.
+
+So instead of writing:
+
+#+BEGIN_EXAMPLE
+body="body of the message"
+#+END_EXAMPLE
+
+or
+
+#+BEGIN_EXAMPLE
+body="""
+body of the message
+"""
+#+END_EXAMPLE
+
+You can write:
+
+#+BEGIN_EXAMPLE
+[body]
+
+Body of the message
+is written here in a freeform  way.
+#+END_EXAMPLE
+
+** Prose: summary and body
+
+Here is an example of the desired style. This is meant to look
+readable and not confusing to someone not versed in the format:
+
+#+BEGIN_EXAMPLE
+Adds new amazing function.
+
+[body]
+
+This new function will solve every problem you need.
+
+Just use it and trust me I promise it will be really good and have no
+bugs.
+#+END_EXAMPLE
+
+We are using explicit typing and assignment of the first line and the
+new body-> value syntax.
+
+** Change Semantics
+
+Now for the important part. The semantics about what this change
+actually does.
+
+Using the categories Hickey laid out plus some additions we have 3
+major categories:
+
+- Growth
+- Breakage
+- Regression
+
+Growth is good and Breakage and Regression are bad.
+
+Breakage is really bad and Regression is less bad.
+
+These 3 categories are not used explicitly since we really should be
+more specific about what kind of changes were made so that the
+consumer knows what they have to worry about.
+
+Within each of these we have keywords (using EDN keyword syntax) for
+these changes. Each keyword implies whether it is growth, breakage, or
+regression.
+
+- Growth
+  - accretion :: a new feature is added
+  - relaxed :: a requirement for a component is no longer required
+  - fixation :: a problem of correctness was fixed; i.e. bugfix
+  - performance :: performance was improved
+  - clarity :: the ability to understand the system was improved,
+               e.g. docstrings, formatting
+- Breakage
+  - stricter :: components need more inputs to run
+  - stingier :: components return less than they previously did
+  - replaced :: a component was replaced with something else under the
+                same name
+  - rename :: A component is renamed to something else.
+  - removal :: A component is removed and the name or component no
+               longer exists
+- Regression
+  - hamstring (or cripple) :: A component has less performance than
+       before.
+  - deprecation :: A component will still exist (with the same name)
+                   but will no longer be supported (usually implies an
+                   improved version is somewhere else or is outside of
+                   the scope of the project).
+  - tautology :: A pollution of namespace. This would be used e.g when
+                 you deprecate one name and make a new thing that does
+                 almost the same thing elsewhere.
+
+Growth is the improvement of a code base. Users of your code can keep
+on using it the way they were before. Or they can use the improved
+versions.
+
+The only issue here is deployment assumptions. Will your consumers
+have an up to date version of the code.
+
+For Regression these are things that won't break consumers code
+(unless a reduction in performance is breaking) but do make the code
+base worse in some respect.
+
+Regressions are preferred to Breakages where possible. Breakages are
+when changes in the code will require a change to consumers of that
+code.
+
+
+** Domains
+
+Domains specify which part of the project was effected by the change.
+
+These are similar to the top-level folders of a project.
+
+So far these are:
+- src :: the source code
+- docs :: documentation
+- style :: formatting of any other domain
+- metadata :: any metadata files that describe the project, such as
+              manifest files.
+- build :: configuration or scripts for performing builds (not build
+           artifacts)
+- tests :: changes to tests of the project
+- deployment :: configuration or scripts for deploying the project
+- artifacts :: if build artifacts are stored with the code this
+               implies these were updated. Do not use if artifacts are
+               not stored in the same history. (Let the Ops stuff deal
+               with that).
+
+** Issues
+
+Many software development software that uses git or something will add
+in support for issues, merge requests etc.
+
+We use namespaced keywords along with 3 toplevel categories:
+
+- issues :: targets for fixation
+- tickets :: 
+- milestones :: targets for growth other than fixation
+- merge requests :: 
+
+This allows you to specify issues from multiple different platforms.
+
+In addition to these types we also have different predicate semantics
+for these.
+
+That is a change in the codebase can:
+
+- fix :: the issue has been directly fixed as specified in that issue
+- progresses :: progress has been made towards that issue but not
+             completely fixed
+- obsoletes :: makes an issue go away but doesn't directly address the
+              problem
+
+#+BEGIN_EXAMPLE
+[issues]
+fixes = [:issues/github/345, :issues/jira/432, :ticket/zendesk/7339]
+
+progresses = [:ticket/zendesk/1]
+
+obsoletes = [:ticker/zendesk/2]
+
+#+END_EXAMPLE
