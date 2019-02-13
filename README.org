@@ -214,3 +214,88 @@ progresses = [:ticket/zendesk/1]
 obsoletes = [:ticker/zendesk/2]
 
 #+END_EXAMPLE
+
+** Version Numbers
+
+"Semantic Versioning" is a farce, but people still like version
+numbers.
+
+Here is our proposal for semantic version numbers.
+
+#+BEGIN_EXAMPLE
+B.R.G
+#+END_EXAMPLE
+
+Where the ~B~ number is a version resulting from *ANY* breaking
+change. If you never break your code out of alpha you can elide this
+number.
+
+The number ~R~ is a version resulting from noteworthy
+regressions. This can also be elided if there are none.
+
+Finally, ~G~ is the number of versions of noteworthy growth
+changes. This is the only one that cannot be elided and it starts
+at 0.
+
+When the breakage version number is incremented this value is reset to
+0 (since you effectively have a new software product).
+
+There should be no reason why a user should never be afraid to update
+to the ~G~ version number since they are strictly for growth items.
+
+Because, regressions typically don't happen without good reason the
+~G~ number doesn't reset when it is incremented.
+
+Here are some examples.
+
+After exiting alpha stage a software has continuously only added
+features and suffered no regressions (that they know of).
+
+#+BEGIN_EXAMPLE
+85
+#+END_EXAMPLE
+
+This project now wants to add a number of new features that warrant an
+extra abstraction which decreased performance.
+
+#+BEGIN_EXAMPLE
+1.86
+#+END_EXAMPLE
+
+
+A developer that was spited in love took their anger out on the code
+base and a number of thread sleep instructions to the code,
+drastically decreasing performance of the application.
+
+#+BEGIN_EXAMPLE
+2.86
+#+END_EXAMPLE
+
+The itch for the second system kicks in and the developers are bored
+of their old language so they decide to rewrite it in a hot new
+language.
+
+#+BEGIN_EXAMPLE
+2.0.0
+#+END_EXAMPLE
+
+Don't do it. Why would you do that.
+
+** Testing Phases
+
+There are 2 major R&D and testing phases:
+
+- alpha :: prototype and research
+- beta :: testing and stabilization
+
+During these two phases you should be unafraid of increasing the ~B~
+or ~R~ number since you want to have a good product in the end. These
+should be prefixed by either 'a' or 'b'.
+
+#+BEGIN_EXAMPLE
+a.240.64.300
+#+END_EXAMPLE
+
+When you change from a to b reset everything.
+
+When you change from b to g (gamma, which is never shown) reset again.
