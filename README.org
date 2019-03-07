@@ -124,6 +124,8 @@ regression.
   - performance :: performance was improved
   - clarity :: the ability to understand the system was improved,
                e.g. docstrings, formatting
+  - robustness :: a component is better able to deal with failure
+                  modes.
 - Breakage
   - stricter :: components need more inputs to run
   - stingier :: components return less than they previously did
@@ -132,6 +134,7 @@ regression.
   - rename :: A component is renamed to something else.
   - removal :: A component is removed and the name or component no
                longer exists
+
 - Regression
   - hamstring (or cripple) :: A component has less performance than
        before.
@@ -139,9 +142,13 @@ regression.
                    but will no longer be supported (usually implies an
                    improved version is somewhere else or is outside of
                    the scope of the project).
-  - tautology :: A pollution of namespace. This would be used e.g when
+  - pollution :: A pollution of namespace. This would be used e.g when
                  you deprecate one name and make a new thing that does
                  almost the same thing elsewhere.
+  - noisier :: More output is produced to channels to like stdout and
+               stderr. E.g. excess warnings that are mostly
+               superfluous. Usually coupled with a growth objective
+               and used to avoid making a breakage.
 
 Growth is the improvement of a code base. Users of your code can keep
 on using it the way they were before. Or they can use the improved
