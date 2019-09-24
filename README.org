@@ -158,6 +158,160 @@ Regressions are preferred to Breakages where possible. Breakages are
 when changes in the code will require a change to consumers of that
 code.
 
+** WIPs
+
+I am not sure what I think about work in progress (WIP) commits. That
+is a commit that you would not want to release to anybody. But this
+outlines the virtues and vices of allowing something like this.
+
+In these cases it is often overly confusing to specify all the changes
+and domains etc. and it would be very easy just to set ~WIP = true~ in
+the config and then have it treated specially (never make a release
+from that commit, and don't look for changelog semantics).
+
+I believe this conflates a few different things that really deserve
+semantics in the version control manager (if it had extensible metadata).
+
+That is there is a difference between this kind of commit and a commit
+which should be considered a mini-release.
+
+There can be lots of divergent branching and merging strategies to
+overcome this by keeping a "release" branch or branches for good
+commits that are rebased upon merging to remove all the WIP commits.
+
+The use of WIPs gets in the way of this kind of workflow and slows
+things down.
+
+If the WIP metadata was a first class thing in the commit history of
+git then you (the commitor) and the merger (rebaser) wouldn't have to
+really worry about that and you can just use WIPS basically as a save
+mechanism.
+
+Ideally, you would never have to explicitly "commit" WIPs and the
+filesystem/database should take care of that for you, however this
+obviously is just a pipe dream.
+
+Then the only time you would ever want to commit (i.e. push) is to
+share a WIP with others so that they can help you out. Although I
+think that should be done "off-chain".
+
+All this can be done using branches and maybe that is the actual smart
+way to go, but it just requires either conventions, enforcement,
+adhering to those conventions (which can be very difficult for all but
+the most dutiful of us). Or a patched git. Or a new version control system.
+
+So in light of this and sticking with putting the metadata into the
+git commits as an MVP we suggest two methods.
+
+First by setting:
+
+#+BEGIN_SRC toml
+WIP = true
+#+END_SRC
+
+In the commit message to indicate that particular commit was a WIP.
+
+And also to only ever (intentionally) commit WIP commits on a branch
+with a special WIP syntax. Perhaps ~WIP:branch_name~.
+
+With this method then you can do automatic rebases between WIP commits
+that alter the commit messages to include the WIP commit messages but
+also have the semantic metadata for that "segment" of commits.
+
+So if you have a series of commits on ~WIP:mybranch~:
+
+
+First commit is a WIP:
+
+#+BEGIN_SRC toml
+  running amok
+
+  [body]
+
+  Changing stuff without regard for how it looks. Opening it up just to
+  see what it looks like inside.
+
+  Maybe we can sew it up later so that so much stuff is not broken
+  later, but for now I just need to experiment and save my work and send
+  it to John to see what he thinks.
+
+  WIP = true
+#+END_SRC
+
+Second commit is also WIP:
+
+#+BEGIN_SRC toml
+  more stuff
+
+  WIP = true
+
+#+END_SRC
+
+But then a third commit is stabilized and has made choices about the
+semantic changes it is to make:
+
+#+BEGIN_SRC toml
+  changes implementation of component Foo
+
+  [body]
+
+  Reimplemented the backend of Foo to make it faster.
+
+  Ended up not having to break any of the API, but we had to add more
+  options to support tweaking.
+
+  Was careful to set sane defaults so that the API is not stricter.
+
+  changes = [:changes/performance, :changes/accretion]
+  domain = [:domain/src]
+#+END_SRC
+
+Then when you go to merge (or do a special rebase) the WIP commits
+will just get folded into the change semantics commit:
+
+#+BEGIN_SRC toml
+  changes implementation of component Foo
+
+  [body]
+
+  Reimplemented the backend of Foo to make it faster.
+
+  Ended up not having to break any of the API, but we had to add more
+  options to support tweaking.
+
+  Was careful to set sane defaults so that the API is not stricter.
+
+  changes = [:changes/performance, :changes/accretion]
+  domain = [:domain/src]
+
+  [rebase]
+
+  [rebase.0]
+
+  message = "more stuff"
+  hash = 'nf9q8234hrx923y4928nry98'
+
+  WIP = true
+
+  [rebase.1]
+
+  message = "running amok"
+  hash = 'afiosen230uwhfdsfnosndf'
+
+  [rebase.1.body]
+
+  Changing stuff without regard for how it looks. Opening it up just to
+  see what it looks like inside.
+
+  Maybe we can sew it up later so that so much stuff is not broken
+  later, but for now I just need to experiment and save my work and send
+  it to John to see what he thinks.
+
+  WIP = true
+
+#+END_SRC
+
+In fact that is a pretty dang good strategy for doing rebases in any case.
 
 ** Domains
 
